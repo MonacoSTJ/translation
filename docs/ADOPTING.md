@@ -6,14 +6,14 @@ Private Plates.
 
 ## The general recipe
 
-1. **Add the dependency.**
-   - Same machine as the package (siblings under `Claude Code/`): a local path,
-     `"@newreg/translation": "file:../../../translation"` (adjust depth to the
-     package.json's location).
-   - A different machine or CI: a git dependency,
-     `"@newreg/translation": "github:MonacoSTJ/translation"`. The package builds
-     itself on install (its `prepare` script) and also ships a built `dist`, so
-     no extra build step is needed.
+1. **Add the dependency.** Use a **pinned GitHub tarball** — it is fetched over
+   HTTPS and uses the package's committed `dist`, so nothing needs `git` in the
+   build image (a `file:` path is invisible to Docker, and a `github:` dep makes
+   npm shell out to `git`, which most build images do not have):
+   `"@newreg/translation": "https://github.com/MonacoSTJ/translation/archive/<sha>.tar.gz"`
+   (use the current commit sha of the translation repo; bump it to take an
+   update). A local `file:../../../translation` path also works for host-only dev
+   on the same machine, but not inside Docker.
    - For a Next.js frontend, add `transpilePackages: ['@newreg/translation']` to
      `next.config`.
 
@@ -68,9 +68,10 @@ report is `docs/I18N_HANDOVER.md` in that repo; the reciprocal answers are in
   async, so the package's async server helpers drop straight in (no sync adapter
   was needed there, unlike ScrapMetal on Next 14). It has no Tailwind; the
   package ships no styled components, so nothing to reconcile.
-- **Add the dependency as a git dependency** (`github:MonacoSTJ/translation`),
-  since Private Plates is built on a separate machine and cannot use the local
-  file path ScrapMetal uses.
+- **Add the dependency as a pinned tarball** (see step 1 above), since Private
+  Plates is built on a separate machine, in Docker, and cannot use a local file
+  path. Do not use the `github:` form: the build image has no `git`. ScrapMetal
+  proved this exact path.
 - **Only six call sites** use the old `useI18n()`, versus 41 on ScrapMetal, so do
   the direct rename to the plain names (`useTranslation`, `translate`,
   `language`, `setLanguage`) rather than keeping back-compat adapters. Keep the
