@@ -57,6 +57,28 @@ Private Plates.
 - Missing wording falls back per key: chosen language, then English, then the
   key. A half-filled language ships without breaking anything.
 
+## Two lessons from real adoptions
+
+- **Keep the catalogue as the words; do not migrate visible copy to
+  `translate('key')` at the point of use.** For a site with a large string-pinned
+  test suite this is the difference between a clean swap and a wave of broken
+  pins. Keep the site's `TEXT` catalogue and change only the handful of places
+  that call the provider/hook. English then renders identically, so tests that
+  assert rendered strings never move (Private Plates: 3231/3231 regression pins
+  unchanged before and after, only six hook call sites touched). A full
+  key-by-key migration of rendered copy is rarely worth the churn.
+
+- **Verify React from the frontend, not the repo root, in a mixed workspace.**
+  `npm ls react` at a monorepo root can correctly report React 18 when another
+  workspace legitimately needs it (for example a `packages/emails` using
+  `@react-email/*`), while the Next frontend resolves its own nested React 19.
+  That is not stale node_modules, and `rm -rf node_modules && npm install` would
+  delete a healthy tree and return the same number. Check what the frontend
+  actually resolves, e.g. run from `packages/frontend`:
+  `node -e "console.log(require('react/package.json').version)"`, or look at
+  `packages/frontend/node_modules/react`. Only reinstall if the frontend's own
+  React is wrong.
+
 ## Private Plates, specifically
 
 Private Plates already carries a copy of this system that was ported from

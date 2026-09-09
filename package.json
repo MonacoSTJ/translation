@@ -7,6 +7,7 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./package.json": "./package.json",
     "./languages": { "types": "./dist/languages.d.ts", "default": "./dist/languages.js" },
     "./text": { "types": "./dist/text.d.ts", "default": "./dist/text.js" },
     "./server": { "types": "./dist/server.d.ts", "default": "./dist/server.js" },
