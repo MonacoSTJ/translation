@@ -80,7 +80,13 @@ export const TEXT = {
 - **Resumable.** `<code>.progress.json` records a hash of the English for each
   key translated. A run that stops halfway continues from where it was; a
   changed English phrase re-translates only itself; a removed key is dropped
-  from the output. Nothing is paid for twice.
+  from the output. Nothing is paid for twice. A value a person types into
+  `<code>.json` by hand is adopted and never overwritten by a later run.
+- **Two ways to fail** (`onFailure`, `--on-failure`): `empty` (default) writes
+  `""` so the deploy gate fails; `english` writes the English phrase so the site
+  ships and a person works through the list instead. Either way the failed keys
+  are written to `<code>.failed.json`. The second is the Private Plates
+  behaviour, folded in from its own translator.
 - `--dry-run` prints how many keys and words each language would send, and
   costs nothing.
 - Command line: `translate-catalogue <en.json | text-module> --into cy,pl,ro

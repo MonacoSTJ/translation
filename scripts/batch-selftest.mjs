@@ -62,6 +62,28 @@ checks.push(['a changed English string is re-translated', dict3['nav.home'] === 
 checks.push(['a removed key is dropped from the output', !('faq.q1' in dict3)]);
 checks.push(['dry run makes no calls', (await (async () => { const c = calls; await translateCatalogue({ source, into: ['ro'], outDir: dir, dryRun: true, log: quiet }); return calls === c; })())]);
 
+const failedList = JSON.parse(readFileSync(join(dir, 'pl.failed.json'), 'utf8'));
+checks.push(['failed keys are listed in pl.failed.json', Array.isArray(failedList) && failedList.length === 1 && failedList[0] === 'bad']);
+
+// onFailure: 'english' keeps the gate green and leaves the English in place.
+const dir2 = mkdtempSync(join(tmpdir(), 'catalogue-en-'));
+const eng = await translateCatalogue({ source, into: ['pl'], outDir: dir2, client: fake, chunkSize: 5, onFailure: 'english', log: quiet });
+const dictEng = JSON.parse(readFileSync(join(dir2, 'pl.json'), 'utf8'));
+checks.push(["onFailure 'english' writes the English phrase for a failed key", dictEng['bad'] === source['bad'] && eng[0].empty === 1]);
+checks.push(["onFailure 'english' still lists the key as failed", JSON.parse(readFileSync(join(dir2, 'pl.failed.json'), 'utf8'))[0] === 'bad']);
+
+// A hand-typed value with no progress hash is adopted, never overwritten.
+const handDir = mkdtempSync(join(tmpdir(), 'catalogue-hand-'));
+const { writeFileSync } = await import('fs');
+writeFileSync(join(handDir, 'pl.json'), JSON.stringify({ greeting: 'Witaj {name}' }));
+const beforeHand = calls;
+const hand = await translateCatalogue({ source, into: ['pl'], outDir: handDir, client: fake, chunkSize: 5, log: quiet });
+const handDict = JSON.parse(readFileSync(join(handDir, 'pl.json'), 'utf8'));
+checks.push(['a hand-filled value survives the run', handDict['greeting'] === 'Witaj {name}' && hand[0].reused === 1]);
+checks.push(['and its hash is recorded so it counts as done', JSON.parse(readFileSync(join(handDir, 'pl.progress.json'), 'utf8'))['greeting'] !== undefined]);
+rmSync(dir2, { recursive: true, force: true });
+rmSync(handDir, { recursive: true, force: true });
+
 const { placeholders, checkTranslations } = await import('../dist/check.js');
 checks.push(['comparator sees {v1} value slots', placeholders('Pay {v1} today') === '{v1}']);
 checks.push(['comparator sees <tN> tag pairs', placeholders('Read the <t1>terms</t1> first') === '</t1>,<t1>']);

@@ -15,6 +15,13 @@ export type CatalogueOptions = TranslateOptions & {
   outDir: string;
   chunkSize?: number;
   dryRun?: boolean;
+  /**
+   * What to write when a phrase cannot be translated after the retry.
+   * 'empty' (default): an empty string, so check-translations fails the deploy.
+   * 'english': the English phrase, so the site ships and a person works through
+   * <code>.failed.json instead. Either way the failed keys are listed there.
+   */
+  onFailure?: 'empty' | 'english';
   log?: (line: string) => void;
 };
 
@@ -119,14 +126,22 @@ export async function translateCatalogue(options: CatalogueOptions): Promise<Lan
     if (language === defaultLanguage) continue;
     const dictPath = join(options.outDir, `${language}.json`);
     const progressPath = join(options.outDir, `${language}.progress.json`);
+    const failedPath = join(options.outDir, `${language}.failed.json`);
     const dict = readJson<Phrases>(dictPath, {});
     const progress = readJson<Progress>(progressPath, {});
+    const failed: string[] = [];
 
     for (const key of Object.keys(dict)) {
       if (!(key in options.source)) {
         delete dict[key];
         delete progress[key];
       }
+    }
+
+    // A value a person typed into <code>.json (no progress hash yet) is adopted,
+    // not overwritten: a hand correction survives every later run.
+    for (const key of sourceKeys) {
+      if (dict[key] && progress[key] === undefined) progress[key] = hash(options.source[key]);
     }
 
     const pending = sourceKeys.filter((key) => {
@@ -164,10 +179,11 @@ export async function translateCatalogue(options: CatalogueOptions): Promise<Lan
           value = single !== source && acceptable(source, single) ? single.trim() : null;
         }
         if (value === null) {
-          dict[key] = '';
+          dict[key] = options.onFailure === 'english' ? source : '';
           delete progress[key];
+          failed.push(key);
           report.empty += 1;
-          log(`${language}: "${key}" left empty (placeholder or engine failure); fix by hand or re-run`);
+          log(`${language}: "${key}" ${options.onFailure === 'english' ? 'left in English' : 'left empty'} (placeholder or engine failure); listed in ${language}.failed.json`);
         } else {
           dict[key] = value;
           progress[key] = hash(source);
@@ -179,6 +195,7 @@ export async function translateCatalogue(options: CatalogueOptions): Promise<Lan
       for (const key of sourceKeys) if (key in dict) ordered[key] = dict[key];
       writeJson(dictPath, ordered);
       writeJson(progressPath, progress);
+      writeJson(failedPath, failed);
       log(`${language}: ${Math.min(i + chunkSize, pending.length)}/${pending.length} keys, ${report.calls} calls`);
     }
 
@@ -187,8 +204,9 @@ export async function translateCatalogue(options: CatalogueOptions): Promise<Lan
       for (const key of sourceKeys) if (key in dict) ordered[key] = dict[key];
       writeJson(dictPath, ordered);
       writeJson(progressPath, progress);
+      writeJson(failedPath, failed);
     }
-    log(`${language}: done. ${report.translated} translated, ${report.reused} reused, ${report.empty} empty, ${report.calls} calls`);
+    log(`${language}: done. ${report.translated} translated, ${report.reused} reused, ${report.empty} failed (${options.onFailure === 'english' ? 'in English' : 'empty'}), ${report.calls} calls`);
     reports.push(report);
   }
 

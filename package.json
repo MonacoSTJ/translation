@@ -1,6 +1,6 @@
 {
   "name": "@newreg/translation",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "description": "Shared translation system for every New Reg site: the language list, the text lookup, the React provider and hook, the server-side helpers, the per-language URL helpers, and the Claude-powered translation of live content. One copy, used by every site, each site supplying only its own languages and its own words.",
   "main": "dist/index.js",

@@ -97,13 +97,21 @@ async function translateCatalogue(options) {
             continue;
         const dictPath = (0, path_1.join)(options.outDir, `${language}.json`);
         const progressPath = (0, path_1.join)(options.outDir, `${language}.progress.json`);
+        const failedPath = (0, path_1.join)(options.outDir, `${language}.failed.json`);
         const dict = readJson(dictPath, {});
         const progress = readJson(progressPath, {});
+        const failed = [];
         for (const key of Object.keys(dict)) {
             if (!(key in options.source)) {
                 delete dict[key];
                 delete progress[key];
             }
+        }
+        // A value a person typed into <code>.json (no progress hash yet) is adopted,
+        // not overwritten: a hand correction survives every later run.
+        for (const key of sourceKeys) {
+            if (dict[key] && progress[key] === undefined)
+                progress[key] = hash(options.source[key]);
         }
         const pending = sourceKeys.filter((key) => {
             const current = hash(options.source[key]);
@@ -137,10 +145,11 @@ async function translateCatalogue(options) {
                     value = single !== source && acceptable(source, single) ? single.trim() : null;
                 }
                 if (value === null) {
-                    dict[key] = '';
+                    dict[key] = options.onFailure === 'english' ? source : '';
                     delete progress[key];
+                    failed.push(key);
                     report.empty += 1;
-                    log(`${language}: "${key}" left empty (placeholder or engine failure); fix by hand or re-run`);
+                    log(`${language}: "${key}" ${options.onFailure === 'english' ? 'left in English' : 'left empty'} (placeholder or engine failure); listed in ${language}.failed.json`);
                 }
                 else {
                     dict[key] = value;
@@ -154,6 +163,7 @@ async function translateCatalogue(options) {
                     ordered[key] = dict[key];
             writeJson(dictPath, ordered);
             writeJson(progressPath, progress);
+            writeJson(failedPath, failed);
             log(`${language}: ${Math.min(i + chunkSize, pending.length)}/${pending.length} keys, ${report.calls} calls`);
         }
         if (!pending.length) {
@@ -163,8 +173,9 @@ async function translateCatalogue(options) {
                     ordered[key] = dict[key];
             writeJson(dictPath, ordered);
             writeJson(progressPath, progress);
+            writeJson(failedPath, failed);
         }
-        log(`${language}: done. ${report.translated} translated, ${report.reused} reused, ${report.empty} empty, ${report.calls} calls`);
+        log(`${language}: done. ${report.translated} translated, ${report.reused} reused, ${report.empty} failed (${options.onFailure === 'english' ? 'in English' : 'empty'}), ${report.calls} calls`);
         reports.push(report);
     }
     return reports;

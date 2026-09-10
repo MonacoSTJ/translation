@@ -6,6 +6,13 @@ export type CatalogueOptions = TranslateOptions & {
     outDir: string;
     chunkSize?: number;
     dryRun?: boolean;
+    /**
+     * What to write when a phrase cannot be translated after the retry.
+     * 'empty' (default): an empty string, so check-translations fails the deploy.
+     * 'english': the English phrase, so the site ships and a person works through
+     * <code>.failed.json instead. Either way the failed keys are listed there.
+     */
+    onFailure?: 'empty' | 'english';
     log?: (line: string) => void;
 };
 export type LanguageReport = {

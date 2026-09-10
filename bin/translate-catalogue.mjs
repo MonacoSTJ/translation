@@ -5,7 +5,7 @@ import { readFileSync } from 'fs';
 import { translateCatalogue } from '../dist/batch.js';
 
 const args = process.argv.slice(2);
-const VALUE_FLAGS = new Set(['into', 'out', 'glossary', 'style', 'model', 'chunk']);
+const VALUE_FLAGS = new Set(['into', 'out', 'glossary', 'style', 'model', 'chunk', 'on-failure']);
 const flags = {};
 const positional = [];
 for (let i = 0; i < args.length; i += 1) {
@@ -24,7 +24,7 @@ const has = (name) => flags[name] === true;
 const target = positional[0];
 
 if (!target || !flag('into') || !flag('out')) {
-  console.error('Usage: translate-catalogue <english-catalogue.json | site-text-module> --into cy,pl,ro --out <dir> [--glossary glossary.json] [--style style.txt] [--model id] [--chunk 30] [--dry-run]');
+  console.error('Usage: translate-catalogue <english-catalogue.json | site-text-module> --into cy,pl,ro --out <dir> [--glossary glossary.json] [--style style.txt] [--model id] [--chunk 30] [--on-failure empty|english] [--dry-run]');
   console.error('A JSON file is a flat {key: "English phrase"} object. A module must export TEXT (with .en), MESSAGES (with .en) or a flat default object.');
   process.exit(2);
 }
@@ -52,12 +52,15 @@ const reports = await translateCatalogue({
   style,
   model: flag('model'),
   chunkSize: flag('chunk') ? Number(flag('chunk')) : undefined,
+  onFailure: flag('on-failure') === 'english' ? 'english' : 'empty',
   dryRun: has('dry-run'),
 });
 
-const empty = reports.reduce((n, r) => n + r.empty, 0);
-console.log(`\n${has('dry-run') ? 'DRY RUN' : 'DONE'}: ${reports.map((r) => `${r.language} ${r.translated}+${r.reused}${r.empty ? ` (${r.empty} empty)` : ''}`).join(', ')}`);
-if (empty) {
-  console.log(`${empty} value(s) left empty; check-translations will fail until they are filled.`);
-  process.exit(1);
+const failed = reports.reduce((n, r) => n + r.empty, 0);
+console.log(`\n${has('dry-run') ? 'DRY RUN' : 'DONE'}: ${reports.map((r) => `${r.language} ${r.translated}+${r.reused}${r.empty ? ` (${r.empty} failed)` : ''}`).join(', ')}`);
+if (failed) {
+  console.log(flag('on-failure') === 'english'
+    ? `${failed} value(s) left in English; see <lang>.failed.json for a person to work through.`
+    : `${failed} value(s) left empty; check-translations will fail until they are filled (see <lang>.failed.json).`);
+  process.exit(flag('on-failure') === 'english' ? 0 : 1);
 }
