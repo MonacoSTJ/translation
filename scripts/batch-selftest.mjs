@@ -89,6 +89,8 @@ checks.push(['comparator sees {v1} value slots', placeholders('Pay {v1} today') 
 checks.push(['comparator sees <tN> tag pairs', placeholders('Read the <t1>terms</t1> first') === '</t1>,<t1>']);
 checks.push(['a lost closing tag fails the check', checkTranslations({ en: { k: 'Read the <t1>terms</t1> first' }, cy: { k: 'Darllenwch y <t1>telerau yn gyntaf' } }, ['en', 'cy']).errors.some((e) => e.includes('placeholder mismatch'))]);
 checks.push(['tags moved but intact pass the check', checkTranslations({ en: { k: 'Read the <t1>terms</t1> first' }, cy: { k: '<t1>Telerau</t1>: darllenwch yn gyntaf' } }, ['en', 'cy']).errors.length === 0]);
+checks.push(['Romanian ordinal "a doua" is not a stripped accent', checkTranslations({ en: { k: 'the second most common initial' }, ro: { k: 'a doua cea mai comună inițială' } }, ['en', 'ro']).errors.length === 0]);
+checks.push(['Romanian numeral "doua" standing alone still is', checkTranslations({ en: { k: 'two cars' }, ro: { k: 'doua mașini' } }, ['en', 'ro']).errors.some((e) => e.includes('stripped accent'))]);
 
 rmSync(dir, { recursive: true, force: true });
 let failed = 0;

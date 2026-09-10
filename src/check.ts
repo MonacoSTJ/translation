@@ -5,7 +5,10 @@ const STRIPPED_ACCENT_WORDS: Record<string, string[]> = {
   es: ['dias', 'britanic', 'britanicos', 'ultimos', 'ultima', 'informacion', 'numero', 'compania', 'garantia', 'categoria', 'guia', 'tambien'],
   pt: ['preco', 'precos', 'britanic', 'ultimos', 'numero', 'informacao', 'licenca', 'servico', 'servicos', 'negocio'],
   it: ['piu', 'qualita', 'identita', 'societa', 'perche', 'anziche', 'citta', 'cosi', 'attivita', 'verra'],
-  ro: ['pretul', 'pretului', 'preturi', 'piata', 'intre', 'inregistrat', 'inregistra', 'gasit', 'numarul', 'pana', 'doua', 'comerciantul'],
+  // "două" (two) loses its diacritic to "doua", but "a doua" (the second,
+  // feminine ordinal) is spelt without one and is common in guide copy, so the
+  // numeral is flagged only when it does not follow "a".
+  ro: ['pretul', 'pretului', 'preturi', 'piata', 'intre', 'inregistrat', 'inregistra', 'gasit', 'numarul', 'pana', '(?<!\\ba )doua', 'comerciantul'],
   de: ['veroffentlich', 'geschatzt', 'gultig', 'prufung', 'zuruck', 'handler', 'grosse', 'schaftsfuhrer'],
 };
 
