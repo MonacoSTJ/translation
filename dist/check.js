@@ -10,7 +10,11 @@ const STRIPPED_ACCENT_WORDS = {
     ro: ['pretul', 'pretului', 'preturi', 'piata', 'intre', 'inregistrat', 'inregistra', 'gasit', 'numarul', 'pana', 'doua', 'comerciantul'],
     de: ['veroffentlich', 'geschatzt', 'gultig', 'prufung', 'zuruck', 'handler', 'grosse', 'schaftsfuhrer'],
 };
-const placeholders = (value) => (value.match(/\{[a-zA-Z]+\}/g) || []).slice().sort().join(',');
+// The markers a translation must carry through unchanged: `{name}` and `{v1}`
+// value slots, and the `<t1>…</t1>` tag pairs that stand for inline markup when a
+// whole sentence is the key (the Private Plates shape). Compared as a sorted
+// multiset, so a lost `</t1>` or a duplicated `{v2}` both fail.
+const placeholders = (value) => (value.match(/\{[a-zA-Z0-9_]+\}|<\/?t\d+>/g) || []).slice().sort().join(',');
 exports.placeholders = placeholders;
 function checkTranslations(text, languages, options = {}) {
     const defaultLanguage = options.defaultLanguage ?? 'en';

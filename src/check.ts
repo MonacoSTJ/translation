@@ -9,8 +9,12 @@ const STRIPPED_ACCENT_WORDS: Record<string, string[]> = {
   de: ['veroffentlich', 'geschatzt', 'gultig', 'prufung', 'zuruck', 'handler', 'grosse', 'schaftsfuhrer'],
 };
 
+// The markers a translation must carry through unchanged: `{name}` and `{v1}`
+// value slots, and the `<t1>…</t1>` tag pairs that stand for inline markup when a
+// whole sentence is the key (the Private Plates shape). Compared as a sorted
+// multiset, so a lost `</t1>` or a duplicated `{v2}` both fail.
 export const placeholders = (value: string): string =>
-  (value.match(/\{[a-zA-Z]+\}/g) || []).slice().sort().join(',');
+  (value.match(/\{[a-zA-Z0-9_]+\}|<\/?t\d+>/g) || []).slice().sort().join(',');
 
 export type CheckResult = { errors: string[]; warnings: string[] };
 

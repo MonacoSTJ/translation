@@ -57,7 +57,24 @@ Private Plates.
 - Missing wording falls back per key: chosen language, then English, then the
   key. A half-filled language ships without breaking anything.
 
-## Two lessons from real adoptions
+## Lessons from real adoptions
+
+- **When the whole site must translate and the pins must not move, the English
+  sentence is the key.** Private Plates (10 Sep 2026) translated 66 pages and
+  33,000 words without rewriting any JSX: a component's returned tree is wrapped
+  once in a `localise(tree, t)` walker that swaps each run of words for the
+  catalogue entry keyed by that exact English. Values and inline markup become
+  markers inside the key, `{v1}` for a price or a component and `<t1>…</t1>`
+  for a `<b>` or `<a>` that carries words, and an extractor reads the same shape
+  out of the JSX to build the English catalogue (2,758 keys). Since 0.2.1 the
+  package's `placeholders()` comparator, used by both `check-translations` and
+  `translateCatalogue`, treats `{v1}` and `<t1>`/`</t1>` as markers that must
+  survive translation, so this shape is gated by the same rule as `{name}`.
+
+- **A component drawn in both server and client trees takes the language as a
+  prop.** It cannot call a hook, cannot read the cookie, and a function cannot
+  cross the client boundary (the build refuses it). Pass `lang` down and let the
+  component translate from it; the walker or the page supplies the value.
 
 - **Keep the catalogue as the words; do not migrate visible copy to
   `translate('key')` at the point of use.** For a site with a large string-pinned

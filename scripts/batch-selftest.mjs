@@ -62,6 +62,12 @@ checks.push(['a changed English string is re-translated', dict3['nav.home'] === 
 checks.push(['a removed key is dropped from the output', !('faq.q1' in dict3)]);
 checks.push(['dry run makes no calls', (await (async () => { const c = calls; await translateCatalogue({ source, into: ['ro'], outDir: dir, dryRun: true, log: quiet }); return calls === c; })())]);
 
+const { placeholders, checkTranslations } = await import('../dist/check.js');
+checks.push(['comparator sees {v1} value slots', placeholders('Pay {v1} today') === '{v1}']);
+checks.push(['comparator sees <tN> tag pairs', placeholders('Read the <t1>terms</t1> first') === '</t1>,<t1>']);
+checks.push(['a lost closing tag fails the check', checkTranslations({ en: { k: 'Read the <t1>terms</t1> first' }, cy: { k: 'Darllenwch y <t1>telerau yn gyntaf' } }, ['en', 'cy']).errors.some((e) => e.includes('placeholder mismatch'))]);
+checks.push(['tags moved but intact pass the check', checkTranslations({ en: { k: 'Read the <t1>terms</t1> first' }, cy: { k: '<t1>Telerau</t1>: darllenwch yn gyntaf' } }, ['en', 'cy']).errors.length === 0]);
+
 rmSync(dir, { recursive: true, force: true });
 let failed = 0;
 for (const [name, ok] of checks) {
