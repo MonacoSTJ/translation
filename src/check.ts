@@ -9,7 +9,7 @@ const STRIPPED_ACCENT_WORDS: Record<string, string[]> = {
   de: ['veroffentlich', 'geschatzt', 'gultig', 'prufung', 'zuruck', 'handler', 'grosse', 'schaftsfuhrer'],
 };
 
-const placeholders = (value: string): string =>
+export const placeholders = (value: string): string =>
   (value.match(/\{[a-zA-Z]+\}/g) || []).slice().sort().join(',');
 
 export type CheckResult = { errors: string[]; warnings: string[] };

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.placeholders = void 0;
 exports.checkTranslations = checkTranslations;
 const STRIPPED_ACCENT_WORDS = {
     fr: ['negociant', 'negociants', 'societe', 'verifie', 'donnees', 'reseau', 'numero', 'estime', 'prefere'],
@@ -10,6 +11,7 @@ const STRIPPED_ACCENT_WORDS = {
     de: ['veroffentlich', 'geschatzt', 'gultig', 'prufung', 'zuruck', 'handler', 'grosse', 'schaftsfuhrer'],
 };
 const placeholders = (value) => (value.match(/\{[a-zA-Z]+\}/g) || []).slice().sort().join(',');
+exports.placeholders = placeholders;
 function checkTranslations(text, languages, options = {}) {
     const defaultLanguage = options.defaultLanguage ?? 'en';
     const errors = [];
@@ -40,8 +42,8 @@ function checkTranslations(text, languages, options = {}) {
             const value = dict[key];
             if (value === undefined)
                 continue;
-            if (placeholders(value) !== placeholders(base[key])) {
-                errors.push(`${code}: placeholder mismatch in "${key}" (expected ${placeholders(base[key]) || '(none)'})`);
+            if ((0, exports.placeholders)(value) !== (0, exports.placeholders)(base[key])) {
+                errors.push(`${code}: placeholder mismatch in "${key}" (expected ${(0, exports.placeholders)(base[key]) || '(none)'})`);
             }
         }
     }

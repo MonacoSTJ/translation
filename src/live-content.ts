@@ -12,7 +12,7 @@ export type TranslateOptions = {
   defaultLanguage?: string;
 };
 
-function buildSystemPrompt(intoLanguage: string, options: TranslateOptions): string {
+export function buildSystemPrompt(intoLanguage: string, options: TranslateOptions): string {
   const languageName = findLanguage(intoLanguage)?.name ?? intoLanguage;
   const parts = [
     `You are a translation engine. Translate the user's message into ${languageName}.`,

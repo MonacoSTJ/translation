@@ -1,40 +1,88 @@
 {
   "name": "@newreg/translation",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Shared translation system for every New Reg site: the language list, the text lookup, the React provider and hook, the server-side helpers, the per-language URL helpers, and the Claude-powered translation of live content. One copy, used by every site, each site supplying only its own languages and its own words.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
     "./package.json": "./package.json",
-    "./languages": { "types": "./dist/languages.d.ts", "default": "./dist/languages.js" },
-    "./text": { "types": "./dist/text.d.ts", "default": "./dist/text.js" },
-    "./server": { "types": "./dist/server.d.ts", "default": "./dist/server.js" },
-    "./urls": { "types": "./dist/urls.d.ts", "default": "./dist/urls.js" },
-    "./live": { "types": "./dist/live-content.d.ts", "default": "./dist/live-content.js" },
-    "./check": { "types": "./dist/check.d.ts", "default": "./dist/check.js" }
+    "./languages": {
+      "types": "./dist/languages.d.ts",
+      "default": "./dist/languages.js"
+    },
+    "./text": {
+      "types": "./dist/text.d.ts",
+      "default": "./dist/text.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    },
+    "./urls": {
+      "types": "./dist/urls.d.ts",
+      "default": "./dist/urls.js"
+    },
+    "./live": {
+      "types": "./dist/live-content.d.ts",
+      "default": "./dist/live-content.js"
+    },
+    "./check": {
+      "types": "./dist/check.d.ts",
+      "default": "./dist/check.js"
+    },
+    "./batch": {
+      "types": "./dist/batch.d.ts",
+      "default": "./dist/batch.js"
+    }
   },
   "typesVersions": {
     "*": {
-      "languages": ["dist/languages.d.ts"],
-      "text": ["dist/text.d.ts"],
-      "server": ["dist/server.d.ts"],
-      "urls": ["dist/urls.d.ts"],
-      "live": ["dist/live-content.d.ts"],
-      "check": ["dist/check.d.ts"]
+      "languages": [
+        "dist/languages.d.ts"
+      ],
+      "text": [
+        "dist/text.d.ts"
+      ],
+      "server": [
+        "dist/server.d.ts"
+      ],
+      "urls": [
+        "dist/urls.d.ts"
+      ],
+      "live": [
+        "dist/live-content.d.ts"
+      ],
+      "check": [
+        "dist/check.d.ts"
+      ],
+      "batch": [
+        "dist/batch.d.ts"
+      ]
     }
   },
   "bin": {
-    "check-translations": "bin/check-translations.mjs"
+    "check-translations": "bin/check-translations.mjs",
+    "translate-catalogue": "bin/translate-catalogue.mjs"
   },
-  "files": ["dist", "src", "bin", "migrations"],
+  "files": [
+    "dist",
+    "src",
+    "bin",
+    "migrations"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json && node scripts/add-client-directive.mjs",
+    "test": "node scripts/batch-selftest.mjs",
     "prepare": "npm run build"
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "^0.68.0",
+    "@types/node": "^22.20.2",
     "@types/react": "^18.3.0",
     "next": "^14.2.0",
     "react": "^18.3.0",

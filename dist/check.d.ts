@@ -1,4 +1,5 @@
 import { TextByLanguage } from './text';
+export declare const placeholders: (value: string) => string;
 export type CheckResult = {
     errors: string[];
     warnings: string[];

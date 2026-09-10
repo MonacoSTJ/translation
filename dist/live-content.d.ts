@@ -7,6 +7,7 @@ export type TranslateOptions = {
     style?: string;
     defaultLanguage?: string;
 };
+export declare function buildSystemPrompt(intoLanguage: string, options: TranslateOptions): string;
 export declare function translateText(text: string, intoLanguage: string, options?: TranslateOptions): Promise<string>;
 export type RunQuery = <T = any>(sql: string, params: any[]) => Promise<T[]>;
 type ContentRef = {

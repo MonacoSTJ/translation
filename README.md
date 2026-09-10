@@ -69,6 +69,29 @@ export const TEXT = {
   the `translated_content` table and read it back, so nothing is paid for or
   computed twice, and the stored version is what the server renders.
 
+**A whole catalogue, translated in one run** (`src/batch.ts`, added in 0.2.0)
+- `translateCatalogue({ source, into, outDir, glossary, style })` — takes the
+  site's English phrases and writes one JSON file per language into `outDir`
+  (`pl.json`, `cy.json`, ...). Phrases go to Claude in chunks of about 30 as
+  JSON, so a 23,000-word site is roughly 80 calls per language. Every returned
+  value is checked with the same placeholder rule as `check-translations`; a
+  value that fails is retried once on its own and otherwise written as an EMPTY
+  string, so the deploy gate fails rather than the site shipping a broken phrase.
+- **Resumable.** `<code>.progress.json` records a hash of the English for each
+  key translated. A run that stops halfway continues from where it was; a
+  changed English phrase re-translates only itself; a removed key is dropped
+  from the output. Nothing is paid for twice.
+- `--dry-run` prints how many keys and words each language would send, and
+  costs nothing.
+- Command line: `translate-catalogue <en.json | text-module> --into cy,pl,ro
+  --out translations/ [--glossary glossary.json] [--style style.txt]
+  [--model id] [--chunk 30] [--dry-run]`. `glossary.json` is `{ "private plate":
+  "keep in English", ... }`; the rules are placed in the system prompt exactly as
+  `translateText` places them.
+- Proven without an API call: `npm test` runs `scripts/batch-selftest.mjs`
+  against a fake client (chunking, the placeholder guard, resumption, changed and
+  removed keys, dry run).
+
 **Progress**
 - `translationProgress()` — how complete each language is, ready for a small
   admin screen so you can see at a glance what still needs words.
